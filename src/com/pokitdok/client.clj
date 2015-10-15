@@ -9,8 +9,9 @@
 
 (def default-api-version "v4")
 
-(def pokitdok-client-version "0.0.1")
-(def default-headers {"User-Agent" (format "pokitdok-clj %s JDK"
+(def pokitdok-client-version (or (System/getProperty "pokitdok-api.version")
+                                 "0.0.1"))
+(def default-headers {"User-Agent" (format "pokitdok-clj %s JDK %s"
                                            pokitdok-client-version
                                            (System/getProperty "java.version"))})
 
