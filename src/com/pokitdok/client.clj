@@ -22,7 +22,10 @@
 
 (defn make-auth-header
   [client-id client-secret]
-  {"Authorization" (Base64/encodeBase64String (str client-id ":" client-secret))})
+  (let [encoded (-> (str client-id ":" client-secret)
+                       (.getBytes)
+                       (Base64/encodeBase64String))]
+    {"Authorization" (str "Basic " encoded)}))
 
 (defn authorize
   ([client-id client-secret]
@@ -35,6 +38,6 @@
                  :headers (merge default-headers auth-header)
                  :as :json}
 
-         response (http/get auth-endpoint params)]
+         response (http/post auth-endpoint params)]
 
      {:oauth-token (get-in response [:body :access_token])})))
