@@ -5,18 +5,18 @@
 
 (def DEFAULT-API-BASE "https://platform.pokitdok.com")
 (def DEFAULT-SCOPE "default")
+(def DEFAULT-API-VERSION "v4")
 (def USER-SCHEDULE-SCOPE "user_schedule")
 
-(def default-api-version "v4")
+(def pokitdok-client-version
+  (or (System/getProperty "pokitdok-api.version") "0.0.1"))
 
-(def pokitdok-client-version (or (System/getProperty "pokitdok-api.version")
-                                 "0.0.1"))
 (def default-headers {"User-Agent" (format "pokitdok-clj %s JDK %s"
                                            pokitdok-client-version
                                            (System/getProperty "java.version"))})
 
 (defn api-url
-  "Endpoint must have a leading /"
+  "Endpoint must begin with /"
   [api-base version endpoint]
   (str api-base "/api/" version endpoint))
 
