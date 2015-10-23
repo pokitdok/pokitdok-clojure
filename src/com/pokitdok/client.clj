@@ -49,3 +49,194 @@
                      (:url params))]
     (impl/api-request client (-> (merge default-params params)
                                  (assoc :url url)))))
+
+;;;
+;;;; Individual APIs
+;;;
+
+
+(defn get-activities
+  [client]
+  (request client {:url "/activities/"
+                   :method :get}))
+
+(defn get-activity
+  [client id]
+  (request client {:url (str "/activities/" id)
+                   :method :get}))
+
+(defn update-activity
+  [client id params]
+  (request client {:url (str "/activities/" id)
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn get-authorizations
+  [client params]
+  (request client {:url "/authorizations/"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn submit-enrollment-request
+  [client params]
+  (request client {:url "/enrollment/"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn get-cash-prices
+  [client cpt-code zip-code]
+  (request client {:url "/prices/cash"
+                   :method :get
+                   :query-params {:cpt_code cpt-code
+                                  :zip_code zip-code}}))
+
+(defn post-claim
+  [client params]
+  (request client {:url "/claims/"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn convert-claim
+  "claim-file is a string"
+  [client claim-file]
+  (request client {:url "/claims/convert"
+                   :method :post
+                   :form-params {"file" claim-file}}))
+
+(defn claims-status
+  [client params]
+  (request client {:url "/claims/status"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn eligibility
+  [client params]
+  (request client {:url "/eligibility/"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn submit-x12-file
+  [client x12]
+  (request client {:url "/files/"
+                   :method :post
+                   :form-params x12}))
+
+(defn icd-code-convert
+  [client icd9-code]
+  (request client {:url (str "/icd/convert/" icd9-code)
+                   :method :get}))
+
+(defn get-insurance-prices
+  [client cpt-code zip-code]
+  (request client {:url "/prices/insurance"
+                   :method :get
+                   :query-params {:cpt_code cpt-code
+                                  :zip_code zip-code}}))
+
+(defn search-medical-procedure-codes
+  "Search params can include :name or :description"
+  [client search-params]
+  (request client {:url "/mpc/"
+                   :method :get
+                   :query-params search-params}))
+
+(defn get-medical-procedure-code
+  "Search params can include :name or :description"
+  [client code]
+  (request client {:url (str "/mpc/" code)
+                   :method :get}))
+
+(defn search-plans
+  "Search params described at:
+
+  https://platform.pokitdok.com/documentation/v4/#plans"
+  [client search-params]
+  (request client {:url "/plans/"
+                   :method :get
+                   :query-params search-params}))
+
+(defn search-providers
+  "Search params described at:
+
+  https://platform.pokitdok.com/documentation/v4/#providers"
+  [client search-params]
+  (request client {:url "/providers/"
+                   :method :get
+                   :query-params search-params}))
+
+(defn get-provider
+  [client npi]
+  (request client {:url (str "/providers/" npi)
+                   :method :get}))
+
+(defn referrals
+  [client params]
+  (request client {:url "/referrals/"
+                   :method :post
+                   :form-params params
+                   :content-type :json}))
+
+(defn get-all-schedulers
+  [client]
+  (request client {:url "/schedule/schedulers/"
+                   :method :get}))
+
+(defn get-scheduler
+  [client id]
+  (request client {:url (str "/schedule/schedulers/" id)
+                   :method :get}))
+
+(defn get-all-appointment-types
+  [client]
+  (request client {:url "/schedule/appointmenttypes/"
+                   :method :get}))
+
+(defn get-appointment-type
+  [client id]
+  (request client {:url (str "/schedule/appointmenttypes/" id)
+                   :method :get}))
+
+(defn search-appointments
+  "Search params described at:
+
+  https://platform.pokitdok.com/documentation/v4/#scheduling"
+  [client search-params]
+  (request client {:url "/providers/"
+                   :method :get
+                   :query-params search-params}))
+
+(defn get-appointment-slot
+  [client id]
+  (request client {:url (str "/schedule/appointmenttypes/" id)
+                   :method :get}))
+
+(defn book-appointment
+  [client id params]
+  (request client {:url (str "/schedule/appointmenttypes/" id)
+                   :method :put
+                   :form-params params
+                   :content-type :json}))
+
+(def update-appointment book-appointment)
+
+(defn cancel-appointment
+  [client id]
+  (request client {:url (str "/schedule/appointmenttypes/" id)
+                   :method :delete}))
+
+(defn get-all-trading-partners
+  [client]
+  (request client {:url "/tradingpartners/"
+                   :method :get}))
+
+(defn get-trading-partner
+  "Search params can include :name or :description"
+  [client id]
+  (request client {:url (str "/tradingpartners/" id)
+                   :method :get}))
