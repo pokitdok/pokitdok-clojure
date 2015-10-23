@@ -7,4 +7,5 @@
                  [clj-http "2.0.0"]
                  [commons-codec "1.10"]
                  [ring/ring-codec "1.0.0"]
-                 [cheshire "5.5.0"]])
+                 [cheshire "5.5.0"]]
+  :profiles {:dev {:dependencies [[clj-http-fake "1.0.1"]]}})

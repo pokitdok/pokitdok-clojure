@@ -1,43 +1,51 @@
 (ns com.pokitdok.client
-  (:require [clj-http.client :as http]
-            [cheshire.core :as json])
-  (:import [org.apache.commons.codec.binary Base64]))
+  (:require [com.pokitdok.impl :as impl]
+            [com.pokitdok.constants :as constants]))
 
-(def DEFAULT-API-BASE "https://platform.pokitdok.com")
-(def DEFAULT-SCOPE "default")
-(def DEFAULT-API-VERSION "v4")
-(def USER-SCHEDULE-SCOPE "user_schedule")
-
-(def pokitdok-client-version
-  (or (System/getProperty "pokitdok-api.version") "0.0.1"))
-
-(def default-headers {"User-Agent" (format "pokitdok-clj %s JDK %s"
-                                           pokitdok-client-version
-                                           (System/getProperty "java.version"))})
-
-(defn api-url
-  "Endpoint must begin with /"
+(defn ^:private api-url
   [api-base version endpoint]
-  (str api-base "/api/" version endpoint))
+  (str api-base "/api/" (or version constants/DEFAULT-API-VERSION) endpoint))
 
-(defn make-auth-header
-  [client-id client-secret]
-  (let [encoded (-> (str client-id ":" client-secret)
-                       (.getBytes)
-                       (Base64/encodeBase64String))]
-    {"Authorization" (str "Basic " encoded)}))
+(defn create-client
+  ([id secret]
+   (create-client id secret constants/DEFAULT-API-BASE (impl/->CljHttpClient)))
+  ([id secret api-base]
+    (create-client id secret api-base (impl/->CljHttpClient)))
+  ([id secret api-base http-client]
+   (impl/new-client {:api-base api-base
+                     :http-client http-client
+                     :client-id id
+                     :client-secret secret})))
 
-(defn authorize
-  ([client-id client-secret]
-    (authorize DEFAULT-API-BASE))
-  ([api-base client-id client-secret]
-   (let [auth-endpoint (str api-base "/oauth2/token")
-         auth-header (make-auth-header client-id client-secret)
+(defn connect!
+  "Obtains the initial OAuth token"
+  [client]
+  (impl/authorize client)
+  client)
 
-         params {:form-params {"grant_type" "client_credentials"}
-                 :headers (merge default-headers auth-header)
-                 :as :json}
+(defn ^:private validate-request
+  [params]
+  (let [{:keys [url method]} params]
+    (when-not (and (keyword? method)
+                   url
+                   (.startsWith ^String url "/"))
+      (throw (ex-info "Bad request parameters" params)))))
 
-         response (http/post auth-endpoint params)]
+(def ^:private default-params
+  {:as :json})
 
-     {:oauth-token (get-in response [:body :access_token])})))
+(defn request
+  "Params is a map similar to clj-http.client/request *except*
+   that :url is relative (i.e. must begin with /). The client
+   handles making it an absolute URI.
+
+   example:
+   (request client {:method :get
+                    :url \"/activities/42\"})"
+  [client params]
+  (validate-request params)
+  (let [url (api-url (:api-base client)
+                     (:api-version params)
+                     (:url params))]
+    (impl/api-request client (-> (merge default-params params)
+                                 (assoc :url url)))))
