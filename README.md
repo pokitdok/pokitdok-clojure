@@ -2,6 +2,8 @@
 
 A small PokitDok API client
 
+```[com.pokitdok/pokitdok-api "0.0.1"]```
+
 ## Usage
 
 ```clj
