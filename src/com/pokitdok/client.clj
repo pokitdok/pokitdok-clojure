@@ -46,9 +46,17 @@
   (validate-request params)
   (let [url (api-url (:api-base client)
                      (:api-version params)
-                     (:url params))]
-    (impl/api-request client (-> (merge default-params params)
-                                 (assoc :url url)))))
+                     (:url params))
+
+        request-params (merge default-params
+                              params
+                              {:throw-exceptions false
+                               :url url})
+        response (impl/api-request client request-params)]
+    (if (= 401 (:status response))
+      (do (impl/authorize client)
+          (impl/api-request client request-params))
+      response)))
 
 ;;;
 ;;;; Individual APIs

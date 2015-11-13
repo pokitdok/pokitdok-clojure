@@ -36,5 +36,44 @@
       (is (= {:as :json
               :url "https://platform/api/v4/activities/42"
               :method :get
-              :oauth-token the-token}
+              :oauth-token the-token
+              :throw-exceptions false}
              activity-request)))))
+
+(defn vcr-responder
+  [list-of-responses]
+  (let [responses (atom list-of-responses)]
+    (fn [request]
+      (let [resp (first (seq @responses))]
+        (swap! responses rest)
+        resp))))
+
+(deftest renegotiation-test
+  (let [log (atom [])
+        [t1 t2] ["TOKEN" "SECOND_TOKEN"]
+
+        responses [{:status 200
+                    :body {:access_token t1}}
+                   {:status 401
+                    :body {:message "UNAUTHORZED"}}
+                   {:status 200
+                    :body {:access_token t2}}
+                   {:status 200
+                    :body 'ACTIVITIES}]
+
+        expected-activity-response (peek responses)
+        
+        handler (vcr-responder responses)
+        http-client (capturing-http-client handler log)
+        c (-> (c/create-client "foo" "bar" "https://platform" http-client)
+              (c/connect!))
+        auth-token (impl/get-token c)
+        activity-response (c/get-activities c)]
+    (is (= t1 auth-token))
+    (is (= activity-response expected-activity-response))
+    (is (= (map (juxt :method :url) @log)
+
+           [[:post "https://platform/oauth2/token"]
+            [:get "https://platform/api/v4/activities/"]
+            [:post "https://platform/oauth2/token"]
+            [:get "https://platform/api/v4/activities/"]]))))
