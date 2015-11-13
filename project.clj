@@ -1,4 +1,4 @@
-(defproject com.pokitdok/pokitdok-api "0.0.1"
+(defproject com.pokitdok/pokitdok-api "0.0.2"
   :description "A PokitDok API client"
   :url "http://github.com/pokitdok/pokitdok-clojure"
   :license {:name "MIT License"
