@@ -129,12 +129,6 @@
                    :form-params params
                    :content-type :json}))
 
-(defn submit-x12-file
-  [client x12]
-  (request client {:url "/files/"
-                   :method :post
-                   :form-params x12}))
-
 (defn icd-code-convert
   [client icd9-code]
   (request client {:url (str "/icd/convert/" icd9-code)
